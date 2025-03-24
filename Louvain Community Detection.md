@@ -56,7 +56,7 @@ GROUP BY sourceNodeId, targetNodeId;
 SELECT * FROM p2p_demo.public.P2P_AGG_TRANSACTIONS;
 ```
 ## Step 3 : Setup & Access Configuration
-Before running graph algorithms make sure you configure roles, grant permissions, and initialize the Neo4j Graph Analytics application in Snowflake. You can find more details about granting permissions here.
+Before running graph algorithms, we need to make sure to configure roles, grant permissions, and initialize the Neo4j Graph Analytics application in Snowflake. You can find more details about granting permissions here.
 
 <table style="width:100%; border-collapse: collapse;">
   <tr>
@@ -120,9 +120,10 @@ USE DATABASE p2p_demo;</code></pre>
 </table>
 
 ## Step 4 : Load Data from Snowflake
-Next we will retrieve raw data from Snowflake tables.
-User Table (Nodes): Represents individual users (nodes) identified uniquely by user IDs.
-Transaction Table (Relationships): Contains transactions between users, forming relationships in the graph.
+Next we will retrieve raw data from Snowflake tables. Let's take a look at the results from a couple of tables:
+
+- User Table (Nodes): Represents individual users (nodes) identified uniquely by user IDs.
+- Transaction Table (Relationships): Contains transactions between users, forming relationships in the graph.
 
 ```
 USE DATABASE p2p_demo;
@@ -132,12 +133,11 @@ SELECT * FROM p2p_users;
 SELECT * FROM p2p_agg_transactions;
 ```
 ## Step 5 : Construct a Graph Projection
-Transform tabular data into a graph model.
-Define the Graph:
+Next, with just some simple transformations, we can prepare our tabular data to work with a graph model. In our case:
 
-Users → Nodes
+- Users → Nodes
 
-Transactions → Edges (Relationships)
+- Transactions → Edges (Relationships)
 
 
 ```
@@ -173,8 +173,7 @@ SELECT neo4j_graph_analytics.gds.write_nodeproperties_to_table('transaction_grap
 });
 ```
 
-The {'mutateProperty': 'community_id'} parameter tells us to store each node’s community identifier as community_id.
-What this does is that it group users into communities based on transaction activity.
+The `{'mutateProperty': 'community_id'}` parameter tells us to store each node’s community identifier as community_id. What this does is that it group users into communities based on transaction activity.
 
 ## Step 7: Store and Analyze Community Results
 
