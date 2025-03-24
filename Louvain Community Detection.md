@@ -2,7 +2,7 @@
 
 ## **Overview**
 This guide provides a step-by-step approach to running **community detection graph algorithms** using **Neo4j Graph Analytics for Snowflake**. In this quickstart, you will learn how to set up Neo4j Graph Analytics, construct graphs, run community detection algorithms like Louvain, and store results in Snowflake.
-### **What is Neo4j Graph Analytics for Snowflake?** CHANGE 
+### **What is Neo4j Graph Analytics for Snowflake?**  
 
 Neo4j, the Graph Database & Analytics leader, helps organizations find hidden relationships and patterns across billions of data connections deeply, easily, and quickly. **Neo4j Graph Analytics for Snowflake** brings to the power of graph directly to Snowflake, allowing users to run 65+ ready-to-use algorithms on their snowflake data, all without leaving Snowflake! 
 
