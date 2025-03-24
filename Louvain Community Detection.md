@@ -56,7 +56,7 @@ GROUP BY sourceNodeId, targetNodeId;
 SELECT * FROM p2p_demo.public.P2P_AGG_TRANSACTIONS;
 ```
 ## Step 3 : Setup & Access Configuration
-Before running graph algorithms, we need to make sure to configure roles, grant permissions, and initialize the Neo4j Graph Analytics application in Snowflake. You can find more details about granting permissions here.
+Before running graph algorithms, we need to make sure to configure roles, grant permissions, and initialize the Neo4j Graph Analytics application in Snowflake. You can find more details about granting permissions [here](https://app.snowflake.com/hiysshm/neo4j_emea_field/#/apps/application/DF_SNOW_NEO4J_GRAPH_ANALYTICS/security/readme?isPrivate=true).
 
 <table style="width:100%; border-collapse: collapse;">
   <tr>
@@ -164,8 +164,6 @@ Now that we know how it works, let's run it with Neo4j Aura Graph Analytics dire
 SELECT neo4j_graph_analytics.gds.louvain('transaction_graph', {'mutateProperty': 'community_id'});
 
 -- Write  to table
---SELECT neo4j_graph_analytics.gds.write_nodeproperties('transaction_graph',
---           {'nodeProperties': ['community_id'], 'table': 'p2p_demo.public.p2p_louvain'});
 SELECT neo4j_graph_analytics.gds.write_nodeproperties_to_table('transaction_graph', {
   'nodeLabels': ['Node'],
   'nodeProperties': ['community_id'],
@@ -191,7 +189,16 @@ GROUP BY community_id
 ORDER BY community_size DESC LIMIT 10;
 ```
 
+## Step 8: PageRank for Most Important
+
+
+
+## Step 9: Quick Visualization
+
+
+
 ## **Summary**
+
 Quick Links: 
 
 
