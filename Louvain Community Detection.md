@@ -189,9 +189,26 @@ GROUP BY community_id
 ORDER BY community_size DESC LIMIT 10;
 ```
 
-## Step 8: PageRank for Most Important
+## Step 8: Run PageRank to find the most influential users
+The PageRank algorithm helps identify the most influential or central nodes in a network by considering both the quantity and quality of their connections. In the context of P2P financial transactions, PageRank can be used to find key users—whether they are influential customers or suspicious actors in a fraud ring.
 
+Let’s run the PageRank algorithm using Neo4j Graph Analytics directly inside Snowflake!
+```
+SELECT neo4j_graph_analytics.gds.page_rank('transaction_graph', {'mutateProperty': 'page_rank'});
+```
+Once the PageRank scores are computed, we’ll write them to a new Snowflake table (e.g., p2p_users_pagerank) so you can query and analyze them further.
+```
+SELECT DF_SNOW_NEO4J_GRAPH_ANALYTICS.gds.write_nodeproperties('transaction_graph', {
+    'nodeLabels': ['Node'],
+    'nodeProperties': ['score'], 
+    'tableSuffix': '_pagerank'
+});
+```
+You can now view the most influential users based on their PageRank score.
 
+```
+SELECT * FROM p2p_users_pagerank ORDER BY score DESC limit 5;
+```
 
 ## Step 9: Quick Visualization
 
