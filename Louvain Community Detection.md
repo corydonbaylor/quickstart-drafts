@@ -211,12 +211,20 @@ SELECT * FROM p2p_users_pagerank ORDER BY score DESC limit 5;
 ```
 
 ## Step 9: Quick Visualization
-
+Once Louvain and PageRank scores are computed, you can visualize specific communities to explore user behavior, influence, and structure.
+![image](https://github.com/user-attachments/assets/73223687-b8d9-4907-b097-09cd583ce858)
 
 
 ## **Summary**
 
-Quick Links: 
+In this quickstart, you learned how to bring the power of graph analytics into Snowflake using Neo4j Graph Analytics. By working with a P2P transaction dataset, you were able to:
+
+1. Set up the Neo4j Graph Analytics application within Snowflake.
+2. Prepared and projected your data into a graph model (users as nodes, transactions as edges).
+3. Ran Louvain community detection to identify clusters of users with high internal interaction.
+4. Applied PageRank to find the most influential users within the network.
+
+
 
 
 
