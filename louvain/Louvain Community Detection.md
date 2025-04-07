@@ -10,7 +10,9 @@ Neo4j, the Graph Database & Analytics leader, helps organizations find hidden re
 ### **Dataset Overview**
 The dataset used in this guide represents peer-to-peer (P2P) financial transactions where users transfer money between each other. Users may have multiple identifiers, including credit cards, devices, and IP addresses, enhancing the complexity and richness of the data. This structure makes it ideal for identifying clusters, influencers, and fraudulent behaviors.
 
-![alt text](louvain/test.png)
+
+
+![alt text](images/test.png)
 
 ### What you will learn
 
@@ -21,18 +23,28 @@ The dataset used in this guide represents peer-to-peer (P2P) financial transacti
 ### **Prerequisites**
 **Snowflake Account & Access**
 1. Active Snowflake account with appropriate access to databases and schemas.
+2. Neo4j Graph Analytics application installed from the Snowflake marketplace. Access the marketplace via the menu bar on the left hand side of your screen, as seen below:
+   ![alt text](images/marketplace.png)
+3. Load in the CSVs as tables in snowflake. The data can be found in the `data` folder of this repo. Follow the instructions found [here](https://docs.snowflake.com/en/user-guide/data-load-web-ui) to load in each csv as their own table.
+   - `p2p_transactions.csv` should be 
 
-2. Neo4j Graph Analytics application installed from the Snowflake marketplace.
-   ![alt text](louvain/marketplace.png)
+## Step 1: Create a Database and Load Data
+
+Click "Data" on the left hand menu bar and then look for the blue buttom reading "+ Database" as seen on the right hand side:
+
+![](images/database.png)
+
+Let's name our database **P2P_DEMO**. Using the CSVs found here, We are going to add two new tables&mdash; one for 
 
 ## Step 1 :Create a new worksheet and select database 
+
 First, we need to select a worksheet:
 
-![alt text](louvain/upload1.png)
+![alt text](images/upload1.png)
 
 ...and a database to work with:
 
-![alt text](louvain/upload2.png)
+![alt text](images/upload2.png)
 
 ## **Step 2: Prepare Data**
 Now that we have our worksheet and have selected our database, we need to create and aggregate the transaction data necessary for subsequent graph analytics.
