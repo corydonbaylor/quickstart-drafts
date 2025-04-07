@@ -35,6 +35,10 @@ First, we need to select a worksheet and a database to work with.
 
 ## **Step 2: Prepare Data**
 
+ADD HEAD OF DATA
+
+
+
 Now that we have our worksheet and have selected our database, we need to create and aggregate the transaction data necessary for subsequent graph analytics.
 
 ```

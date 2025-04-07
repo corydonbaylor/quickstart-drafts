@@ -9,7 +9,8 @@ Neo4j, the Graph Database & Analytics leader, helps organizations find hidden re
 
 ### **Dataset Overview**
 The dataset used in this guide represents peer-to-peer (P2P) financial transactions where users transfer money between each other. Users may have multiple identifiers, including credit cards, devices, and IP addresses, enhancing the complexity and richness of the data. This structure makes it ideal for identifying clusters, influencers, and fraudulent behaviors.
-![alt text](image.png)
+
+![alt text](louvain/test.png)
 
 ### What you will learn
 
@@ -22,17 +23,20 @@ The dataset used in this guide represents peer-to-peer (P2P) financial transacti
 1. Active Snowflake account with appropriate access to databases and schemas.
 
 2. Neo4j Graph Analytics application installed from the Snowflake marketplace.
-   ![alt text](image-3.png)
+   ![alt text](louvain/marketplace.png)
 
 ## Step 1 :Create a new worksheet and select database 
-First, we need to select a worksheet and a database to work with.
+First, we need to select a worksheet:
 
-![alt text](image-1.png)
-![alt text](image-2.png)
+![alt text](louvain/upload1.png)
+
+...and a database to work with:
+
+![alt text](louvain/upload2.png)
 
 ## **Step 2: Prepare Data**
 Now that we have our worksheet and have selected our database, we need to create and aggregate the transaction data necessary for subsequent graph analytics.
-```
+```sql
 CREATE OR REPLACE TABLE p2p_demo.public.P2P_AGG_TRANSACTIONS (
 	SOURCENODEID NUMBER(38,0),
 	TARGETNODEID NUMBER(38,0),
@@ -58,66 +62,38 @@ SELECT * FROM p2p_demo.public.P2P_AGG_TRANSACTIONS;
 ## Step 3 : Setup & Access Configuration
 Before running graph algorithms, we need to make sure to configure roles, grant permissions, and initialize the Neo4j Graph Analytics application in Snowflake. You can find more details about granting permissions [here](https://app.snowflake.com/hiysshm/neo4j_emea_field/#/apps/application/DF_SNOW_NEO4J_GRAPH_ANALYTICS/security/readme?isPrivate=true).
 
-<table style="width:100%; border-collapse: collapse;">
-  <tr>
-    <th style="width:75%; text-align: left; padding: 8px; border: 1px solid #ddd;">Permissions</th>
-    <th style="width:25%; text-align: left; padding: 8px; border: 1px solid #ddd;">Explanation</th>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #ddd;">
-      <pre><code>CREATE ROLE IF NOT EXISTS gds_role;
-GRANT APPLICATION ROLE neo4j_graph_analytics.app_user TO ROLE gds_role;</code></pre>
-    </td>
-    <td style="padding: 8px; border: 1px solid #ddd;">Creates a role for users to analyze data</td>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #ddd;">
-      <pre><code>CREATE ROLE IF NOT EXISTS gds_admin_role;
-GRANT APPLICATION ROLE neo4j_graph_analytics.app_user TO ROLE gds_role;</code></pre>
-    </td>
-    <td style="padding: 8px; border: 1px solid #ddd;">Creates a role for managing the application</td>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #ddd;">
-      <pre><code>GRANT USAGE ON DATABASE p2p_demo TO APPLICATION neo4j_graph_analytics;
-GRANT USAGE ON SCHEMA p2p_demo.public TO APPLICATION neo4j_graph_analytics;</code></pre>
-    </td>
-    <td style="padding: 8px; border: 1px solid #ddd;">The application needs read access to transaction data and write permissions for storing results.</td>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #ddd;">
-      <pre><code>GRANT SELECT ON ALL TABLES IN SCHEMA p2p_demo.public TO APPLICATION neo4j_graph_analytics;</code></pre>
-    </td>
-    <td style="padding: 8px; border: 1px solid #ddd;">Grants `SELECT` permission for the Snowflake application role so it can read tables. Without this, the Neo4j GDS application cannot load data from your tables to create a graph.</td>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #ddd;">
-      <pre><code>GRANT CREATE TABLE ON SCHEMA p2p_demo.public TO APPLICATION neo4j_graph_analytics;</code></pre>
-    </td>
-    <td style="padding: 8px; border: 1px solid #ddd;">Grants `CREATE TABLE` permission so GDS can store any analytics outputs (e.g., results of Louvain) in new tables. </td>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #ddd;">
-      <pre><code>GRANT ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA p2p_demo.public TO ROLE gds_role;
+```SQL
+-- Creates a role for users to analyze data
+CREATE ROLE IF NOT EXISTS gds_role;
+GRANT APPLICATION ROLE neo4j_graph_analytics.app_user TO ROLE gds_role;
+
+-- Creates a role for managing the application
+CREATE ROLE IF NOT EXISTS gds_admin_role;
+GRANT APPLICATION ROLE neo4j_graph_analytics.app_user TO ROLE gds_role;
+
+-- The application needs read access to transaction data and write permissions for storing results.
+GRANT USAGE ON DATABASE p2p_demo TO APPLICATION neo4j_graph_analytics;
+GRANT USAGE ON SCHEMA p2p_demo.public TO APPLICATION neo4j_graph_analytics;
+
+-- Grants `SELECT` permission for the Snowflake application role so it can read tables. Without this, the Neo4j GDS application cannot load data from your tables to create a graph.
+GRANT SELECT ON ALL TABLES IN SCHEMA p2p_demo.public TO APPLICATION neo4j_graph_analytics;
+
+-- Grants `CREATE TABLE` permission so GDS can store any analytics outputs (e.g., results of Louvain) in new tables.
+GRANT CREATE TABLE ON SCHEMA p2p_demo.public TO APPLICATION neo4j_graph_analytics;
+
+-- Ensures that any new tables created in the future by the application are automatically accessible to the roles in question. This is optional but convenient for a frictionless workflow.
+GRANT ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA p2p_demo.public TO ROLE gds_role;
 GRANT ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA p2p_demo.public TO ROLE accountadmin;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA p2p_demo.public TO ROLE accountadmin;</code></pre>
-    </td>
-    <td style="padding: 8px; border: 1px solid #ddd;">Ensures that any new tables created in the future by the application are automatically accessible to the roles in question. This is optional but convenient for a frictionless workflow.</td>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #ddd;">
-      <pre><code>CALL neo4j_graph_analytics.gds.create_session('CPU_X64_M');</code></pre>
-    </td>
-    <td style="padding: 8px; border: 1px solid #ddd;">Creates a compute session for the engine on Snowflake using a specified compute model (CPU_X64_M). This step is required before running graph algorithms.</td>
-  </tr>
-  <tr>
-    <td style="padding: 8px; border: 1px solid #ddd;">
-      <pre><code>SELECT neo4j_graph_analytics.gds.graph_drop('transaction_graph', { 'failIfMissing': false });
-USE DATABASE p2p_demo;</code></pre>
-    </td>
-    <td style="padding: 8px; border: 1px solid #ddd;">Drop any existing graph named transaction_graph so you can recreate it from scratch. Using { 'failIfMissing': false } to avoids errors if the graph does not exist yet.</td>
-  </tr>
-</table>
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA p2p_demo.public TO ROLE accountadmin;
+
+-- Creates a compute session for the engine on Snowflake using a specified compute model (CPU_X64_M). This step is required before running graph algorithms.
+CALL neo4j_graph_analytics.gds.create_session('CPU_X64_M');
+
+-- Drop any existing graph named transaction_graph so you can recreate it from scratch. Using { 'failIfMissing': false } to avoids errors if the graph does not exist yet.
+SELECT neo4j_graph_analytics.gds.graph_drop('transaction_graph', { 'failIfMissing': false });
+USE DATABASE p2p_demo;
+```
+
 
 ## Step 4 : Load Data from Snowflake
 Next we will retrieve raw data from Snowflake tables. Let's take a look at the results from a couple of tables:
@@ -125,7 +101,7 @@ Next we will retrieve raw data from Snowflake tables. Let's take a look at the r
 - User Table (Nodes): Represents individual users (nodes) identified uniquely by user IDs.
 - Transaction Table (Relationships): Contains transactions between users, forming relationships in the graph.
 
-```
+```sql
 USE DATABASE p2p_demo;
 USE SCHEMA public;
 SELECT * FROM p2p_users;
@@ -140,7 +116,7 @@ Next, with just some simple transformations, we can prepare our tabular data to 
 - Transactions â†’ Edges (Relationships)
 
 
-```
+```sql
 SELECT neo4j_graph_analytics.gds.graph_project('transaction_graph',{
   'nodeTables': {
     'p2p_demo.public.p2p_users': 'Node'
@@ -160,7 +136,7 @@ The louvain algorithm is a popular method for detecting communities in large net
 
 Now that we know how it works, let's run it with Neo4j Aura Graph Analytics directly in snowflake!
 
-```
+```sql
 SELECT neo4j_graph_analytics.gds.louvain('transaction_graph', {'mutateProperty': 'community_id'});
 
 -- Write  to table
@@ -178,28 +154,18 @@ The `{'mutateProperty': 'community_id'}` parameter tells us to store each nodeâ€
 Persist Louvain results in Snowflake and analyze community structures.
 
 This helps us retreive all rows from your newly written table (e.g., p2p_users_louvain) so you can see which community each user belongs to.
-```
+```sql
 SELECT * FROM p2p_users_louvain ORDER BY community_id;
 ```
 This step aggregates the user communities by counting how many nodes exist in each. This query helps you identify the largest or most active communities.
-```
+```sql
 SELECT community_id, count(nodeid) AS community_size
 FROM p2p_users_louvain
 GROUP BY community_id
 ORDER BY community_size DESC LIMIT 10;
 ```
 
-## Step 8: PageRank for Most Important
 
-
-
-## Step 9: Quick Visualization
-
-
-
-## **Summary**
-
-Quick Links: 
 
 
 
