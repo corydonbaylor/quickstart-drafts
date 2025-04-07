@@ -34,20 +34,25 @@ Click "Data" on the left hand menu bar and then look for the blue buttom reading
 
 ![](images/database.png)
 
-Let's name our database **P2P_DEMO**. Using the CSVs found here, We are going to add two new tables&mdash; one for 
+Let's name our database **P2P_DEMO**. Using the CSVs found [here](https://github.com/corydonbaylor/quickstart-drafts/tree/main/louvain/data), We are going to add two new tables:
 
-## Step 1 :Create a new worksheet and select database 
+- one called **P2P_TRANSACTIONS** based on the `p2p_transactions.csv`  
+- one called **P2P_USERS** based on `p2p_users.csv`
 
-First, we need to select a worksheet:
+Follow the steps found [here](https://docs.snowflake.com/en/user-guide/data-load-web-ui) to load in your data.
+
+## Step 2 :Create a new worksheet and select database 
+
+In order to run Graph Analytics, we will need to create a new SQL worksheet:
 
 ![alt text](images/upload1.png)
 
-...and a database to work with:
+And select our database to work with:
 
 ![alt text](images/upload2.png)
 
-## **Step 2: Prepare Data**
-Now that we have our worksheet and have selected our database, we need to create and aggregate the transaction data necessary for subsequent graph analytics.
+## **Step 3: Prepare Data**
+Now that we have our worksheet and have selected our database, we can easily start manipulating our data using SQL for our analysis. We are first going to create a new table with the aggregated transactions between users like so:
 ```sql
 CREATE OR REPLACE TABLE p2p_demo.public.P2P_AGG_TRANSACTIONS (
 	SOURCENODEID NUMBER(38,0),
@@ -71,8 +76,24 @@ FROM p2p_demo.public.P2P_TRANSACTIONS
 GROUP BY sourceNodeId, targetNodeId;
 SELECT * FROM p2p_demo.public.P2P_AGG_TRANSACTIONS;
 ```
-## Step 3 : Setup & Access Configuration
-Before running graph algorithms, we need to make sure to configure roles, grant permissions, and initialize the Neo4j Graph Analytics application in Snowflake. You can find more details about granting permissions [here](https://app.snowflake.com/hiysshm/neo4j_emea_field/#/apps/application/DF_SNOW_NEO4J_GRAPH_ANALYTICS/security/readme?isPrivate=true).
+Note that we need to have a particular structure for Graph Analytics to work:
+
+**For the table representing nodes:**
+
+- The first column should be called `nodeId`, which represents the ids for the each node in our graph
+
+**For the table representing relationships:**
+
+- We need to have columns called `sourceNodeId` and `targetNodeId`. These will tell Graph Analytics the direction of the transaction, which in this case means:
+  - Who sent the money (`sourceNodeId`) and 
+  - Who received it (`targetNodeId`)
+- We also include a `total_amount` column that acts as the weights in the relationship
+
+## Step 4 : Setup & Access Configuration
+
+Now that we have our data in the right format, we need to make sure to configure roles, grant permissions, and initialize the Neo4j Graph Analytics application in Snowflake. 
+
+*Note: You can find more details about granting permissions [here](https://app.snowflake.com/hiysshm/neo4j_emea_field/#/apps/application/DF_SNOW_NEO4J_GRAPH_ANALYTICS/security/readme?isPrivate=true).*
 
 ```SQL
 -- Creates a role for users to analyze data
@@ -107,20 +128,21 @@ USE DATABASE p2p_demo;
 ```
 
 
-## Step 4 : Load Data from Snowflake
-Next we will retrieve raw data from Snowflake tables. Let's take a look at the results from a couple of tables:
+## Step 5 : Load Data from Snowflake
+Before we proceed, it might be worth taking a look at our tables and taking stock of where we stand:
 
 - User Table (Nodes): Represents individual users (nodes) identified uniquely by user IDs.
-- Transaction Table (Relationships): Contains transactions between users, forming relationships in the graph.
+- Transaction Table (Relationships): Contains aggregated transactions between users, forming relationships in the graph.
 
 ```sql
 USE DATABASE p2p_demo;
 USE SCHEMA public;
 SELECT * FROM p2p_users;
-
 SELECT * FROM p2p_agg_transactions;
 ```
-## Step 5 : Construct a Graph Projection
+## Step 6 : Construct a Graph Projection
+*<u>**THIS IS WILL CHANGE WITH UPDATED SYNTAX**</u>*
+
 Next, with just some simple transformations, we can prepare our tabular data to work with a graph model. In our case:
 
 - Users → Nodes
@@ -143,10 +165,12 @@ SELECT neo4j_graph_analytics.gds.graph_project('transaction_graph',{
   }
 });
 ```
-## Step 6:  Run Louvain Community Detection
+## Step 7:  Run Louvain Community Detection
+*<u>**THIS IS WILL CHANGE WITH UPDATED SYNTAX**</u>*
+
 The louvain algorithm is a popular method for detecting communities in large networks by optimizing modularity. Modularity measures the density of links inside communities compared to links between communities. This makes Louvain particularly useful for applications such as customer segmentation, fraud detection, and social network analysis.
 
-Now that we know how it works, let's run it with Neo4j Aura Graph Analytics directly in snowflake!
+Now that we know how it works, let's see what we get:
 
 ```sql
 SELECT neo4j_graph_analytics.gds.louvain('transaction_graph', {'mutateProperty': 'community_id'});
@@ -159,9 +183,11 @@ SELECT neo4j_graph_analytics.gds.write_nodeproperties_to_table('transaction_grap
 });
 ```
 
-The `{'mutateProperty': 'community_id'}` parameter tells us to store each node’s community identifier as community_id. What this does is that it group users into communities based on transaction activity.
+Note: the `{'mutateProperty': 'community_id'}` parameter tells us to store each node’s community identifier as community_id. What this does is that it group users into communities based on transaction activity.
 
-## Step 7: Store and Analyze Community Results
+## Step 8: Store and Analyze Community Results
+
+*<u>**THIS IS WILL CHANGE WITH UPDATED SYNTAX**</u>*
 
 Persist Louvain results in Snowflake and analyze community structures.
 
@@ -177,7 +203,9 @@ GROUP BY community_id
 ORDER BY community_size DESC LIMIT 10;
 ```
 
-## Step 8: Run PageRank to find the most influential users
+## Step 9: Run PageRank to find the most influential users
+*<u>**THIS IS WILL CHANGE WITH UPDATED SYNTAX**</u>*
+
 The PageRank algorithm helps identify the most influential or central nodes in a network by considering both the quantity and quality of their connections. In the context of P2P financial transactions, PageRank can be used to find key users—whether they are influential customers or suspicious actors in a fraud ring.
 
 Let’s run the PageRank algorithm using Neo4j Graph Analytics directly inside Snowflake!
@@ -198,7 +226,7 @@ You can now view the most influential users based on their PageRank score.
 SELECT * FROM p2p_users_pagerank ORDER BY score DESC limit 5;
 ```
 
-## Step 9: Quick Visualization
+## Step 10: Quick Visualization
 Once Louvain and PageRank scores are computed, you can visualize specific communities to explore user behavior, influence, and structure.
 ![image](https://github.com/user-attachments/assets/73223687-b8d9-4907-b097-09cd583ce858)
 
