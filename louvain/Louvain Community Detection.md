@@ -1,18 +1,18 @@
 # **Community Detection in Neo4j Graph Analytics on Snowflake**
 
 ## **Overview**
-This guide provides a step-by-step approach to running **community detection graph algorithms** using **Neo4j Graph Analytics for Snowflake**. In this quickstart, you will learn how to set up Neo4j Graph Analytics, construct graphs, run community detection algorithms like Louvain, and store results in Snowflake.
+This Quickstart provides a step-by-step guide to running **community detection graph algorithms** using **Neo4j Graph Analytics for Snowflake**. You will learn how to set up Neo4j Graph Analytics, construct graphs, run community detection algorithms like Louvain, and store results in Snowflake.
 ### **What is Neo4j Graph Analytics for Snowflake?**  
 
-Neo4j, the Graph Database & Analytics leader, helps organizations find hidden relationships and patterns across billions of data connections deeply, easily, and quickly. **Neo4j Graph Analytics for Snowflake** brings to the power of graph directly to Snowflake, allowing users to run 65+ ready-to-use algorithms on their snowflake data, all without leaving Snowflake! 
+Neo4j helps organizations find hidden relationships and patterns across billions of data connections deeply, easily, and quickly. **Neo4j Graph Analytics for Snowflake** brings to the power of graph directly to Snowflake, allowing users to run 65+ ready-to-use algorithms on their data, all without leaving Snowflake! 
 
 
 ### **Dataset Overview**
-The dataset used in this guide represents peer-to-peer (P2P) financial transactions where users transfer money between each other. Users may have multiple identifiers, including credit cards, devices, and IP addresses, enhancing the complexity and richness of the data. This structure makes it ideal for identifying clusters, influencers, and fraudulent behaviors.
+The [datasets](https://github.com/corydonbaylor/quickstart-drafts/tree/main/louvain/data) used in this guide represents peer-to-peer (P2P) financial transactions where users transfer money between each other. Users may have multiple identifiers, including credit cards, devices, and IP addresses, enhancing the complexity and richness of the data. This structure makes it ideal for identifying clusters, influencers, and fraudulent behaviors.
 
+We primiarly will be working wtih two CSVs, which we will load into Snowflake. `p2p_users.csv` has information about the nodes including an Id, a fraud flag, and other information about the user.
 
-
-![alt text](images/test.png)
+`p2p_transactions.csv`  simply has information about the transactions between different users and includes a `transaction_amount`.
 
 ### What you will learn
 
@@ -25,8 +25,6 @@ The dataset used in this guide represents peer-to-peer (P2P) financial transacti
 1. Active Snowflake account with appropriate access to databases and schemas.
 2. Neo4j Graph Analytics application installed from the Snowflake marketplace. Access the marketplace via the menu bar on the left hand side of your screen, as seen below:
    ![alt text](images/marketplace.png)
-3. Load in the CSVs as tables in snowflake. The data can be found in the `data` folder of this repo. Follow the instructions found [here](https://docs.snowflake.com/en/user-guide/data-load-web-ui) to load in each csv as their own table.
-   - `p2p_transactions.csv` should be 
 
 ## Step 1: Create a Database and Load Data
 
@@ -36,8 +34,8 @@ Click "Data" on the left hand menu bar and then look for the blue buttom reading
 
 Let's name our database **P2P_DEMO**. Using the CSVs found [here](https://github.com/corydonbaylor/quickstart-drafts/tree/main/louvain/data), We are going to add two new tables:
 
-- one called **P2P_TRANSACTIONS** based on the `p2p_transactions.csv`  
-- one called **P2P_USERS** based on `p2p_users.csv`
+- One called **P2P_TRANSACTIONS** based on the `p2p_transactions.csv`  
+- One called **P2P_USERS** based on `p2p_users.csv`
 
 Follow the steps found [here](https://docs.snowflake.com/en/user-guide/data-load-web-ui) to load in your data.
 
@@ -52,7 +50,10 @@ And select our database to work with:
 ![alt text](images/upload2.png)
 
 ## **Step 3: Prepare Data**
-Now that we have our worksheet and have selected our database, we can easily start manipulating our data using SQL for our analysis. We are first going to create a new table with the aggregated transactions between users like so:
+Now that we have our worksheet and have selected our database, we can easily start manipulating our data using SQL for our analysis. 
+
+We are first going to create a new table with the aggregated transactions between users like so:
+
 ```sql
 CREATE OR REPLACE TABLE p2p_demo.public.P2P_AGG_TRANSACTIONS (
 	SOURCENODEID NUMBER(38,0),
@@ -76,7 +77,7 @@ FROM p2p_demo.public.P2P_TRANSACTIONS
 GROUP BY sourceNodeId, targetNodeId;
 SELECT * FROM p2p_demo.public.P2P_AGG_TRANSACTIONS;
 ```
-Note that we need to have a particular structure for Graph Analytics to work:
+Note that we need to have a particular structure for Graph Analytics to work.
 
 **For the table representing nodes:**
 
