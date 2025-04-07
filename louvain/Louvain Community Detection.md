@@ -8,11 +8,14 @@ Neo4j helps organizations find hidden relationships and patterns across billions
 
 
 ### **Dataset Overview**
-The [datasets](https://github.com/corydonbaylor/quickstart-drafts/tree/main/louvain/data) used in this guide represents peer-to-peer (P2P) financial transactions where users transfer money between each other. Users may have multiple identifiers, including credit cards, devices, and IP addresses, enhancing the complexity and richness of the data. This structure makes it ideal for identifying clusters, influencers, and fraudulent behaviors.
+P2P Fraud Losses are Skyrocketing. In 2023, 8% of banking customers reported being victims of P2P scams, with the average loss being $176. In this Quickstart, we will bring the power of graph to snowflake to better understand how money flows in P2P networks. 
 
-We primiarly will be working wtih two CSVs, which we will load into Snowflake. `p2p_users.csv` has information about the nodes including an Id, a fraud flag, and other information about the user.
+Our [datasets](https://github.com/corydonbaylor/quickstart-drafts/tree/main/louvain/data) represents peer-to-peer (P2P) financial transactions where users transfer money between each other. Users may have multiple identifiers, including credit cards, devices, and IP addresses, enhancing the complexity and richness of the data. This structure makes it ideal for identifying clusters, influencers, and fraudulent behaviors.
 
-`p2p_transactions.csv`  simply has information about the transactions between different users and includes a `transaction_amount`.
+We primiarly will be working wtih two CSVs, which we will load into Snowflake:
+
+-  `p2p_users.csv` has information about the nodes including an Id, a fraud flag, and other information about the user.
+- `p2p_transactions.csv`  simply has information about the transactions between different users and includes a `transaction_amount`.
 
 ### What you will learn
 
@@ -234,10 +237,10 @@ Once Louvain and PageRank scores are computed, you can visualize specific commun
 
 ## **Summary**
 
-In this quickstart, you learned how to bring the power of graph analytics into Snowflake using Neo4j Graph Analytics. By working with a P2P transaction dataset, you were able to:
+In this quickstart, you learned how to bring the power of graph insights into Snowflake using Neo4j Graph Analytics. By working with a P2P transaction dataset, you were able to:
 
 1. Set up the Neo4j Graph Analytics application within Snowflake.
-2. Prepared and projected your data into a graph model (users as nodes, transactions as edges).
+2. Prepare and project your data into a graph model (users as nodes, transactions as relationships).
 3. Ran Louvain community detection to identify clusters of users with high internal interaction.
 4. Applied PageRank to find the most influential users within the network.
 
