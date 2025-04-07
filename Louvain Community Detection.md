@@ -165,7 +165,40 @@ GROUP BY community_id
 ORDER BY community_size DESC LIMIT 10;
 ```
 
+## Step 8: Run PageRank to find the most influential users
+The PageRank algorithm helps identify the most influential or central nodes in a network by considering both the quantity and quality of their connections. In the context of P2P financial transactions, PageRank can be used to find key users—whether they are influential customers or suspicious actors in a fraud ring.
 
+Let’s run the PageRank algorithm using Neo4j Graph Analytics directly inside Snowflake!
+```sql
+SELECT neo4j_graph_analytics.gds.page_rank('transaction_graph', {'mutateProperty': 'page_rank'});
+```
+Once the PageRank scores are computed, we’ll write them to a new Snowflake table (e.g., p2p_users_pagerank) so you can query and analyze them further.
+```sql
+SELECT DF_SNOW_NEO4J_GRAPH_ANALYTICS.gds.write_nodeproperties('transaction_graph', {
+    'nodeLabels': ['Node'],
+    'nodeProperties': ['score'], 
+    'tableSuffix': '_pagerank'
+});
+```
+You can now view the most influential users based on their PageRank score.
+
+```sql
+SELECT * FROM p2p_users_pagerank ORDER BY score DESC limit 5;
+```
+
+## Step 9: Quick Visualization
+Once Louvain and PageRank scores are computed, you can visualize specific communities to explore user behavior, influence, and structure.
+![image](https://github.com/user-attachments/assets/73223687-b8d9-4907-b097-09cd583ce858)
+
+
+## **Summary**
+
+In this quickstart, you learned how to bring the power of graph analytics into Snowflake using Neo4j Graph Analytics. By working with a P2P transaction dataset, you were able to:
+
+1. Set up the Neo4j Graph Analytics application within Snowflake.
+2. Prepared and projected your data into a graph model (users as nodes, transactions as edges).
+3. Ran Louvain community detection to identify clusters of users with high internal interaction.
+4. Applied PageRank to find the most influential users within the network.
 
 
 
