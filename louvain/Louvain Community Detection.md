@@ -1,24 +1,32 @@
-## **What is Neo4j Graph Analytics for Snowflake?**  
+## Overview
+
+### What is Neo4j Graph Analytics for Snowflake? 
 
 Neo4j helps organizations find hidden relationships and patterns across billions of data connections deeply, easily, and quickly. **Neo4j Graph Analytics for Snowflake** brings to the power of graph directly to Snowflake, allowing users to run 65+ ready-to-use algorithms on their data, all without leaving Snowflake! 
 
-## Discovering Communities in P2P Fraud
+### Discovering Communities in P2P Fraud
 P2P Fraud Losses are Skyrocketing. 8% of banking customers reported being victims of P2P Scams in the past year, and the average loss to these scams was $176.
 
 Finding different communities within P2P transactions is the first step towards identifying and ultimately ending P2P fraud. 
 
-**In This Demo You Will Learn**
+### Prerequisites
+- The Native App Neo4j Graph Analytics for Snowflake
+  
+### What You Will Need
+- Active Snowflake account with appropriate access to databases and schemas.
+- Neo4j Graph Analytics application installed from the Snowflake marketplace. Access the marketplace via the menu bar on the left hand side of your screen, as seen below:
 
+### What You Will Learn
 - How to prepare and project your data for graph analytics
 - How to use community detection to identify fraud
 - How to read and write directly from and to your snowflake tables
 
-**You Will Need**
-- Active Snowflake account with appropriate access to databases and schemas.
-- Neo4j Graph Analytics application installed from the Snowflake marketplace. Access the marketplace via the menu bar on the left hand side of your screen, as seen below:
+### What You Will Build
+- A method to identify communities that are at high risk of fraud in P2P networks
 
+<!-- ------------------------ -->
 ## Step 1: Loading the Data
-Dataset overview : The P2P Dataset has the below schema with users sending money to each other in P2P transactions. Each user can also have multiple identifiers, including credit cards, devices, and IP addresses. 
+Dataset overview : This dataset is modelled to design and analyze a peer to peer transaction network to identify fraudulent activity using graph analytics. 
 ![image](https://github.com/user-attachments/assets/b2c6627a-7c3f-4ec4-81b6-5685e18af741)
 
 
@@ -29,6 +37,7 @@ Let's name our database `P2P_DEMO`. Using the CSVs found [here](https://drive.go
 
 Follow the steps found [here](https://docs.snowflake.com/en/user-guide/data-load-web-ui) to load in your data.
 
+<!-- ------------------------ -->
 ## Step 2: Setting Up
 Before we run our algorithms, we need to set the proper permissions. But before we get started granting different roles, we need to ensure that you are using `accountadmin` to grant and create roles. Lets do that now:
 
@@ -72,16 +81,16 @@ use role gds_role;
 ```
 
 
-
+<!-- ------------------------ -->
 ## Step 3 : Cleaning Our Data
 
 We need our data to be in a particular format in order to work with Graph Analytics. In general it should be like so:
 
-**For the table representing nodes:**
+### For the table representing nodes:
 
 The first column should be called `nodeId`, which represents the ids for the each node in our graph
 
-**For the table representing relationships:**
+### For the table representing relationships:
 
 We need to have columns called `sourceNodeId` and `targetNodeId`. These will tell Graph Analytics the direction of the transaction, which in this case means:
 - Who sent the money (sourceNodeId) and
@@ -110,6 +119,7 @@ CREATE OR REPLACE VIEW p2p_users_vw (nodeId) AS
     SELECT DISTINCT p2p_demo.public.p2p_users.NODEID as nodeid
     FROM p2p_users;
 ```
+<!-- ------------------------ -->
 
 ## Step 4: Running your Algorithms
 Now we are finally at the step where we create a projection, run our algorithms, and write back to snowflake. We will run louvain to determine communities within our data. Louvain identifies communities by grouping together nodes that have more connections to each other than to nodes outside the group.
@@ -167,7 +177,7 @@ CALL se_snow_neo4j_graph_analytics.graph.louvain('CPU_X64_XS', {
     }]
 });
 ```
-#### Our resulting table assigns a community id to each node based on their connections to other nodes in the graph.
+Our resulting table assigns a community id to each node based on their connections to other nodes in the graph.
 
 ```sql
 select community,   COUNT(*) AS community_size, 
@@ -175,7 +185,7 @@ from p2p_demo.public.p2p_users_vw_lou
 group by community
 order by community_size desc;
 ```
-#### We can then use then add in the `fraud_transfer_flag` (which was provided by the vendor) to our communities to see if users in that community are at greater risk for fraud:
+We can then use then add in the `fraud_transfer_flag` (which was provided by the vendor) to our communities to see if users in that community are at greater risk for fraud:
 
 ```sql
 SELECT
@@ -193,7 +203,7 @@ GROUP BY
 ORDER BY
   community_size DESC, fraud_count DESC;
 ```
-## **Summary**
+## Conclusions and Resources
 In this quickstart, you learned how to bring the power of graph insights into Snowflake using Neo4j Graph Analytics. By working with a P2P transaction dataset, you were able to:
 
 1. Set up the Neo4j Graph Analytics application within Snowflake.
