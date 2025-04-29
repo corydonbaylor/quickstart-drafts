@@ -18,7 +18,7 @@ Finding different communities within P2P transactions is the first step towards 
 - Neo4j Graph Analytics application installed from the Snowflake marketplace. Access the marketplace via the menu bar on the left hand side of your screen, as seen below:
 
 ## Step 1: Loading the Data
-Dataset overview : This dataset is modelled to design and analyze a peer to peer transaction network to identify fraudulent activity using graph analytics. 
+Dataset overview : The P2P Dataset has the below schema with users sending money to each other in P2P transactions. Each user can also have multiple identifiers, including credit cards, devices, and IP addresses. 
 ![image](https://github.com/user-attachments/assets/b2c6627a-7c3f-4ec4-81b6-5685e18af741)
 
 
